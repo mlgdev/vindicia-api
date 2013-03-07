@@ -1,3 +1,4 @@
+require 'fakeredis'
 require 'helper'
 require 'net/http'
 
@@ -18,6 +19,8 @@ class Vindicia::ModelTest < Test::Unit::TestCase
     assert Vindicia::API_CLASSES.has_key?(@good_api_version)
     assert !Vindicia.config.is_configured?
 
+    @redis_log = FakeRedis::Redis.new
+    
     assert_nothing_raised do
       Vindicia.configure do |config|
         config.api_version = @good_api_version
@@ -25,6 +28,7 @@ class Vindicia::ModelTest < Test::Unit::TestCase
         config.password = 'your_password' 
         config.endpoint = 'https://soap.prodtest.sj.vindicia.com/soap.pl'
         config.namespace = 'http://soap.vindicia.com'
+        config.redis_log = @redis_log
       end
     end
     assert Vindicia.config.is_configured?
@@ -33,6 +37,8 @@ class Vindicia::ModelTest < Test::Unit::TestCase
   def teardown
     Vindicia.clear_config
     Vindicia::Configuration.reset_instance
+    @redis_log.del("vindicia_api_call")
+    @redis_log.del("vindicia_api_call_time")
   end
 
   def test_should_define_api_methods_of_respective_vindicia_class_for_respective_api_version
@@ -54,5 +60,18 @@ class Vindicia::ModelTest < Test::Unit::TestCase
     assert_not_nil resp
     assert resp.to_hash
     assert_equal '500', resp[:update_response][:return][:return_code]
+  end
+
+  def test_should_record_api_calls
+    Vindicia::AutoBill.client.expects(:request).twice.returns(true)
+
+    assert_nil @redis_log.get("vindicia_api_call")
+    assert_empty @redis_log.lrange("vindicia_api_call_time", 0, -1)
+    
+    resp = Vindicia::AutoBill.update({})
+    resp = Vindicia::AutoBill.update({})
+    
+    assert_equal 2, @redis_log.get("vindicia_api_call").to_i
+    assert_equal 2, @redis_log.lrange("vindicia_api_call_time", 0, -1).length
   end
 end

@@ -46,7 +46,9 @@ module Vindicia
       def define_class_action(action)
         class_action_module.module_eval <<-CODE
           def #{action.to_s.underscore}(body = {}, &block)
-            client.request :tns, #{action.inspect} do
+            record_api_call
+            call_start = Time.now
+            request = client.request :tns, #{action.inspect} do
               soap.namespaces["xmlns:tns"] = vindicia_target_namespace
               http.headers["SOAPAction"] = vindicia_soap_action('#{action}')
               soap.body = {
@@ -54,6 +56,9 @@ module Vindicia
               }.merge(body)
               block.call(soap, wsdl, http, wsse) if block
             end
+            call_end = Time.now
+            record_api_call_time(call_start, call_end)
+            request
           rescue Exception => e
             rescue_exception(:#{action.to_s.underscore}, e)
           end
@@ -71,7 +76,11 @@ module Vindicia
       def password(password)
         @password = password
       end
-      
+
+      def redis_log(redis_log)
+        @redis_log = redis_log
+      end
+            
       def vindicia_class_name
         name.demodulize
       end
@@ -97,7 +106,16 @@ module Vindicia
           { :return_code => '500', :return_string => "Error contacting Vindicia: #{error.message}" } 
         } }
       end
-            
+      
+      def record_api_call
+        @redis_log.incr("vindicia_api_call")
+      end
+      
+      def record_api_call_time(start_time, end_time)
+        call_time = ((end_time - start_time) * 1000).to_i
+        @redis_log.lpush("vindicia_api_call_time", call_time)
+      end
+      
       def class_action_module
         @class_action_module ||= Module.new do
           # confused why this is needed

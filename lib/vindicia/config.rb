@@ -159,7 +159,7 @@ module Vindicia
   class Configuration
     include Singleton
     
-    attr_accessor :api_version, :login, :password, :endpoint, :namespace
+    attr_accessor :api_version, :login, :password, :endpoint, :namespace, :redis_log
 
     def initialize
       @@configured = false      
@@ -208,6 +208,8 @@ module Vindicia
           endpoint Vindicia.config.endpoint
           namespace Vindicia.config.namespace
 
+          redis_log Vindicia.config.redis_log
+          
           actions *API_CLASSES[Vindicia.config.api_version][vindicia_klass]
         end
       )

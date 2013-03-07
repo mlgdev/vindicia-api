@@ -18,9 +18,10 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_dependency('savon')
+  gem.add_dependency('savon', '0.9.9')
   gem.add_dependency('activesupport')
 
   gem.add_development_dependency('rake')
   gem.add_development_dependency('mocha')
+  gem.add_development_dependency('fakeredis')
 end
