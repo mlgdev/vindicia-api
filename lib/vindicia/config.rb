@@ -199,6 +199,7 @@ module Vindicia
           client do
             http.headers["Pragma"] = "no-cache"
             http.auth.ssl.verify_mode = :none # TODO set based on environment
+            http.read_timeout = 30 # seconds # TODO make this a config
           end
 
           api_version Vindicia.config.api_version
