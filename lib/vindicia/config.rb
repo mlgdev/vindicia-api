@@ -154,7 +154,7 @@ module Vindicia
 #      :web_session=>[:initialize, :finalize, :fetch_by_vid] # initialize is a ruby reserved word. need to refactor to get this one to work =( @TQ
       :web_session=> [:finalize, :fetch_by_vid]
     },
-    "14.0" => {
+    "19.0" => {
         :account => [:update, :stop_auto_billing, :update_payment_method, :fetch_by_merchant_account_id, :fetch_by_vid, :fetch_by_web_session_vid, :fetch_by_email, :fetch_by_payment_method, :token_balance, :token_transaction, :increment_tokens, :decrement_tokens, :transfer, :redeem_gift_card, :grant_credit, :revoke_credit, :fetch_credit_history, :fetch_all_credit_history, :add_children, :remove_children, :fetch_family, :transfer_credit, :make_payment, :reverse_payment, :is_entitled, :grant_entitlement, :revoke_entitlement, :extend_entitlement_to_date, :extend_entitlement_by_interval],
         :activity => [:record],
         :address => [:update, :fetch_by_vid],
